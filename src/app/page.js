@@ -1,95 +1,113 @@
-import Image from 'next/image'
-import styles from './page.module.css'
-
+'use client'
+import styles from '../styles/page.module.css'
+import { useState, useEffect } from 'react'
+import boardColumnsLetters from '../utils/boardColumnsLetters'
 export default function Home() {
+  const [board, setBoard] = useState(
+    Array(10)
+      .fill()
+      .map(() => Array(10).fill())
+  )
+  const [counter, setCounter] = useState(50)
+  const [ships] = useState(placeShips())
+  const [shipsPiecesInGame, setShipsPiecesInGame] = useState(ships)
+
+  function placeShips() {
+    var shipHead = [
+      Math.floor(Math.random() * 10),
+      Math.floor(Math.random() * 10),
+    ]
+    const shipDirection = Math.random() < 0.5 ? 'V' : 'H'
+    let shipBody
+    if (shipDirection === 'V') {
+      if (shipHead[1] === 0) {
+        shipBody = [shipHead[0], shipHead[1] + 1]
+      } else if (shipHead[1] === 9) {
+        shipBody = [shipHead[0], shipHead[1] - 1]
+      } else {
+        shipBody = [
+          shipHead[0],
+          Math.random() < 0.5 ? shipHead[1] - 1 : shipHead[1] + 1,
+        ]
+      }
+    } else {
+      if (shipHead[0] === 0) {
+        shipBody = [shipHead[0] + 1, shipHead[1]]
+      } else if (shipHead[0] === 9) {
+        shipBody = [shipHead[0] - 1, shipHead[1]]
+      } else {
+        shipBody = [
+          Math.random() < 0.5 ? shipHead[0] - 1 : shipHead[0] + 1,
+          shipHead[1],
+        ]
+      }
+    }
+
+    return [shipHead, shipBody]
+  }
+
+  const checkWaters = (column, row) => {
+    var copyBoard = board
+
+    if (copyBoard[column][row] !== undefined) return
+
+    if (ships.some(ship => ship[0] === column && ship[1] === row)) {
+      var copyShipsPiecesInGame = shipsPiecesInGame.filter(
+        piece => piece[0] !== column || piece[1] !== row
+      )
+      copyBoard[column][row] = true
+      setShipsPiecesInGame(copyShipsPiecesInGame)
+    } else {
+      copyBoard[column][row] = false
+    }
+
+    setBoard(copyBoard)
+    setCounter(counter => counter - 1)
+  }
+
+  useEffect(() => {
+    if (counter === 0) {
+      confirm('You ran out of cannon balls, try again ')
+      window.location.reload()
+    }
+    if (shipsPiecesInGame.length === 0) {
+      confirm('You Won')
+      window.location.reload()
+    }
+
+    return () => {}
+  }, [counter, shipsPiecesInGame])
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div className={styles.wrapper}>
+      <h1>Battleship </h1>
+      <h5>You have {counter} cannon balls left</h5>
+      <div className={styles.boardDiv}>
+        {board.map((col, colIndex) => {
+          return (
+            <div style={{ textAlign: 'center' }} key={colIndex}>
+              <p>{boardColumnsLetters[colIndex]}</p>
+              {col.map((row, rowIndex) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {colIndex === 0 ? (
+                    <span style={{ flex: 1 }}>{rowIndex + 1}</span>
+                  ) : null}
+                  <div
+                    onClick={() => checkWaters(colIndex, rowIndex)}
+                    key={rowIndex}
+                    className={`${styles.tile} ${
+                      row === undefined
+                        ? null
+                        : row === true
+                        ? styles.ship
+                        : styles.water
+                    }`}></div>
+                </div>
+              ))}
+            </div>
+          )
+        })}
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   )
 }

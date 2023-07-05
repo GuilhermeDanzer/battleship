@@ -1,0 +1,32 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.boardDiv {
+  display: flex;
+  margin-top: 20px;
+}
+
+.tile {
+  flex: 3;
+  width: 50px;
+  height: 50px;
+  background-color: #fff;
+  margin: 10px;
+  cursor: pointer;
+  transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.water {
+  cursor: default;
+  background-color: #0e87cc;
+  transition: 0.5s;
+}
+
+.ship {
+  cursor: default;
+  background-color: #ff0000;
+  transition: 0.5s;
+}
